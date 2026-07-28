@@ -41,6 +41,8 @@ export default function DraftRoom({
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
+  // supabase is a stable singleton — no need in deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function pickPlayer(playerId: string) {

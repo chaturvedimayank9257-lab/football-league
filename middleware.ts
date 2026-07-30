@@ -21,8 +21,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh the session — this is critical for session persistence.
-  // getUser() will refresh expired tokens and trigger setAll above.
+  // Refresh the session on EVERY route — keeps cookies alive across navigation.
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
 
@@ -43,5 +42,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/draft', '/api/admin/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|logo\\.png|hero\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

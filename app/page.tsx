@@ -44,7 +44,7 @@ export default async function Home() {
             Barely Premier League
           </h1>
           <p className="text-cream/60 text-lg sm:text-xl mb-1">Where ambition exceeds ability</p>
-          <p className="text-cream/40 text-sm tracking-widest uppercase">9th August 2026 · IPL Format</p>
+          <p className="text-cream/40 text-sm tracking-widest uppercase">Est. 2026</p>
           <div className="flex justify-center gap-4 mt-8">
             <Link
               href="/standings"

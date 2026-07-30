@@ -8,6 +8,7 @@ const tabs = [
   { href: '/admin/teams', label: 'Teams' },
   { href: '/admin/draft', label: 'Draft' },
   { href: '/admin/results', label: 'Results' },
+  { href: '/admin/simulate', label: 'Simulate' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -35,6 +35,23 @@ export async function getAvailablePlayers(): Promise<Player[]> {
   return data
 }
 
+export async function createPlayer(name: string, basePrice: number): Promise<Player> {
+  const supabase = await createServerClient()
+  const { data, error } = await supabase
+    .from('players')
+    .insert({ name, base_price: basePrice, status: 'confirmed' })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deletePlayer(id: string): Promise<void> {
+  const supabase = await createServerClient()
+  const { error } = await supabase.from('players').delete().eq('id', id)
+  if (error) throw error
+}
+
 export async function updatePlayer(id: string, data: Partial<Player>): Promise<void> {
   const supabase = await createServerClient()
   const { error } = await supabase.from('players').update(data).eq('id', id)

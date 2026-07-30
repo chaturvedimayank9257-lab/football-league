@@ -16,8 +16,14 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    // Shortcut: typing "admin" expands to admin@bpl.local
+    const loginEmail = email === 'admin' ? 'admin@bpl.local' : email
+
     const supabase = createBrowserClient()
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password,
+    })
 
     if (authError) {
       setError(authError.message)
@@ -42,9 +48,10 @@ export default function LoginPage() {
           <div>
             <label className="text-xs text-cream/40 uppercase tracking-wider block mb-1">Email</label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              placeholder="admin"
               required
               className="w-full bg-navy border border-navy-mid text-cream rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition"
             />

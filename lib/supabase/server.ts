@@ -10,9 +10,14 @@ export async function createServerClient() {
       cookies: {
         getAll() { return cookieStore.getAll() },
         setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          )
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // setAll is called from Server Components where cookies are read-only.
+            // This is expected — the middleware handles session refresh instead.
+          }
         },
       },
     }

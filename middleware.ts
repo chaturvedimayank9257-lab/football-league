@@ -21,6 +21,8 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // Refresh the session — this is critical for session persistence.
+  // getUser() will refresh expired tokens and trigger setAll above.
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
 
@@ -41,5 +43,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/draft'],
+  matcher: ['/admin/:path*', '/draft', '/api/admin/:path*'],
 }

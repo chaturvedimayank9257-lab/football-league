@@ -23,10 +23,11 @@ export default async function StandingsPage() {
   const standings = computeStandings(teams.map(t => t.id), completedMatches)
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Standings</h1>
+    <main className="max-w-3xl mx-auto px-4 py-10">
+      <h1 className="text-3xl font-bold text-gold mb-2">Standings</h1>
+      <div className="gold-divider mb-8" />
       {teams.length === 0 ? (
-        <p className="text-gray-400">Standings will appear once teams are set up.</p>
+        <p className="text-cream/30 text-center py-12">Standings will appear once teams are set up.</p>
       ) : (
         <StandingsTable standings={standings} teams={teams} />
       )}

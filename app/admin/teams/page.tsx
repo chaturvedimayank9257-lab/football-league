@@ -9,7 +9,7 @@ export default async function AdminTeamsPage() {
   const [teams, players] = await Promise.all([getTeams(), getConfirmedPlayers()])
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Teams</h1>
+      <h1 className="text-2xl font-bold text-gold mb-4">Teams</h1>
       <TeamSetupPanel teams={teams} players={players} />
     </div>
   )

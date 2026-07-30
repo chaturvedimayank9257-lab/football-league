@@ -37,7 +37,7 @@ export default function ResultsPanel({
     })
     setGenerating(false)
     if (res.ok) router.refresh()
-    else alert('Failed to generate knockouts — ensure all group matches are complete')
+    else alert('Failed to generate knockouts \u2014 ensure all group matches are complete')
   }
 
   async function generateFixtures() {
@@ -56,11 +56,11 @@ export default function ResultsPanel({
     const t2 = teamMap.get(m.team2_id)
     if (!t1 || !t2) return null
     return (
-      <div className="flex items-center gap-3 py-3 border-b border-gray-800">
-        <span className="w-32 text-right font-medium">{t1.name}</span>
+      <div className="flex items-center gap-3 py-4 border-b border-navy-mid/50">
+        <span className="w-32 text-right font-semibold text-cream">{t1.name}</span>
         {m.status === 'completed' ? (
-          <span className="text-gray-400 font-mono w-16 text-center">
-            {m.team1_score} – {m.team2_score}
+          <span className="text-gold font-mono font-bold w-16 text-center">
+            {m.team1_score} &ndash; {m.team2_score}
           </span>
         ) : (
           <div className="flex items-center gap-2">
@@ -68,43 +68,43 @@ export default function ResultsPanel({
               type="number" min={0}
               value={scores[m.id]?.[0] ?? ''}
               onChange={e => setScores(prev => ({ ...prev, [m.id]: [e.target.value, prev[m.id]?.[1] ?? ''] }))}
-              className="w-14 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-center"
+              className="w-14 bg-navy border border-navy-mid rounded px-2 py-1.5 text-center text-cream focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
             />
-            <span className="text-gray-500">–</span>
+            <span className="text-cream/30">&ndash;</span>
             <input
               type="number" min={0}
               value={scores[m.id]?.[1] ?? ''}
               onChange={e => setScores(prev => ({ ...prev, [m.id]: [prev[m.id]?.[0] ?? '', e.target.value] }))}
-              className="w-14 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-center"
+              className="w-14 bg-navy border border-navy-mid rounded px-2 py-1.5 text-center text-cream focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
             />
             <button
               onClick={() => saveResult(m.id)}
               disabled={saving === m.id}
-              className="bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm"
+              className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-3 py-1.5 rounded text-xs uppercase tracking-wider transition"
             >
               Save
             </button>
           </div>
         )}
-        <span className="font-medium">{t2.name}</span>
+        <span className="font-semibold text-cream">{t2.name}</span>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {groupMatches.length === 0 ? (
         <button
           onClick={generateFixtures}
           disabled={generating}
-          className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white px-4 py-2 rounded"
+          className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
         >
-          {generating ? 'Generating…' : 'Generate Group Fixtures'}
+          {generating ? 'Generating\u2026' : 'Generate Group Fixtures'}
         </button>
       ) : (
         <>
           <div>
-            <h2 className="text-lg font-semibold mb-3">Group Stage</h2>
+            <h2 className="text-sm font-bold text-gold/50 uppercase tracking-[0.2em] mb-4">Group Stage</h2>
             {groupMatches.map(m => <MatchRow key={m.id} m={m} />)}
           </div>
 
@@ -112,15 +112,15 @@ export default function ResultsPanel({
             <button
               onClick={generateKnockouts}
               disabled={generating}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded"
+              className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
             >
-              {generating ? 'Generating…' : 'Generate Knockout Matches'}
+              {generating ? 'Generating\u2026' : 'Generate Knockout Matches'}
             </button>
           )}
 
           {knockoutMatches.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold mb-3">Knockouts</h2>
+              <h2 className="text-sm font-bold text-gold/50 uppercase tracking-[0.2em] mb-4">Knockouts</h2>
               {knockoutMatches.map(m => <MatchRow key={m.id} m={m} />)}
             </div>
           )}

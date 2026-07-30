@@ -9,7 +9,7 @@ export default async function AdminResultsPage() {
   const teamMap = new Map(teams.map(t => [t.id, t]))
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Match Results</h1>
+      <h1 className="text-2xl font-bold text-gold mb-4">Match Results</h1>
       <ResultsPanel matches={matches} teamMap={teamMap} />
     </div>
   )

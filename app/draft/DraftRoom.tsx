@@ -24,7 +24,6 @@ export default function DraftRoom({
   const supabase = createBrowserClient()
 
   useEffect(() => {
-    // Subscribe to realtime changes on draft_session and players tables
     const channel = supabase
       .channel('draft-room')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_session' }, payload => {
@@ -61,8 +60,8 @@ export default function DraftRoom({
 
   if (!session) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400 text-lg">Draft has not started yet. Check back soon!</p>
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <p className="text-cream/30 text-lg">Draft has not started yet. Check back soon!</p>
       </div>
     )
   }
@@ -74,37 +73,45 @@ export default function DraftRoom({
   const isMyTurn = myTeamId === activeTeamId || isAdmin
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-2">
         <div>
-          <h1 className="text-2xl font-bold">Live Draft</h1>
+          <h1 className="text-2xl font-bold text-gold">Live Draft</h1>
           {session.status === 'active' && activeTeam && (
-            <p className="text-gray-400 mt-1">
-              Pick {session.current_pick_index + 1}/{session.snake_order.length} —
-              <span className="font-semibold" style={{ color: activeTeam.color }}>
-                {' '}{activeTeam.name}&apos;s turn
+            <p className="text-cream/50 mt-1">
+              Pick {session.current_pick_index + 1}/{session.snake_order.length} &mdash;
+              <span className="font-bold ml-1" style={{ color: activeTeam.color }}>
+                {activeTeam.name}&apos;s turn
               </span>
             </p>
           )}
           {session.status === 'paused' && (
-            <p className="text-yellow-400 mt-1">Draft is paused</p>
+            <p className="text-gold/70 mt-1">Draft is paused</p>
           )}
           {session.status === 'completed' && (
-            <p className="text-green-400 mt-1">Draft complete!</p>
+            <p className="text-gold mt-1">Draft complete!</p>
           )}
         </div>
 
         {/* Team budgets */}
-        <div className="flex gap-4 text-sm">
-          {teams.map(t => (
-            <div key={t.id} className="text-center">
-              <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: t.color }} />
-              <div className="font-mono text-xs">₹{t.budget_remaining}</div>
-            </div>
-          ))}
+        <div className="flex gap-5">
+          {teams.map(t => {
+            const isActive = t.id === activeTeamId
+            return (
+              <div key={t.id} className={`text-center ${isActive ? 'scale-110' : 'opacity-60'} transition`}>
+                <div
+                  className={`w-4 h-4 rounded-full mx-auto mb-1 ring-2 ${isActive ? 'ring-gold' : 'ring-white/10'}`}
+                  style={{ backgroundColor: t.color }}
+                />
+                <div className="font-mono text-xs text-cream/60">{'\u20B9'}{t.budget_remaining}</div>
+              </div>
+            )
+          })}
         </div>
       </div>
+
+      <div className="gold-divider mb-6" />
 
       {/* Player pool */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -113,21 +120,21 @@ export default function DraftRoom({
             key={p.id}
             onClick={() => pickPlayer(p.id)}
             disabled={!isMyTurn || session.status !== 'active' || picking === p.id}
-            className={`bg-gray-900 border rounded-lg p-3 text-left transition ${
+            className={`bg-navy-light border rounded-lg p-4 text-left transition ${
               isMyTurn && session.status === 'active'
-                ? 'border-gray-700 hover:border-green-500 hover:bg-gray-800 cursor-pointer'
-                : 'border-gray-800 opacity-60 cursor-not-allowed'
+                ? 'border-navy-mid hover:border-gold hover:shadow-[0_0_12px_rgba(212,175,55,0.15)] cursor-pointer'
+                : 'border-navy-mid/50 opacity-40 cursor-not-allowed'
             }`}
           >
-            <div className="font-medium text-sm">{p.name}</div>
-            <div className="text-gray-400 text-xs mt-1">₹{p.base_price}</div>
+            <div className="font-semibold text-sm text-cream">{p.name}</div>
+            <div className="text-gold/50 text-xs mt-1 font-mono">{'\u20B9'}{p.base_price}</div>
             {picking === p.id && (
-              <div className="text-green-400 text-xs mt-1">Picking…</div>
+              <div className="text-gold text-xs mt-1 font-semibold">Picking&hellip;</div>
             )}
           </button>
         ))}
         {players.length === 0 && session.status !== 'completed' && (
-          <p className="col-span-full text-gray-400 text-center py-8">All players drafted!</p>
+          <p className="col-span-full text-cream/30 text-center py-12">All players drafted!</p>
         )}
       </div>
     </div>

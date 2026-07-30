@@ -41,33 +41,33 @@ export default function TeamSetupPanel({
       {/* Existing teams */}
       <div className="space-y-3">
         {teams.map(team => (
-          <div key={team.id} className="flex items-center gap-3 bg-gray-900 rounded-lg p-4">
-            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: team.color }} />
-            <span className="font-semibold">{team.name}</span>
-            <span className="text-gray-400 text-sm">
-              Captain: {players.find(p => p.id === team.captain_id)?.name ?? '—'}
+          <div key={team.id} className="flex items-center gap-3 bg-navy-light border border-navy-mid/50 rounded-lg p-4">
+            <div className="w-4 h-4 rounded-full ring-1 ring-white/20" style={{ backgroundColor: team.color }} />
+            <span className="font-bold text-cream">{team.name}</span>
+            <span className="text-cream/40 text-sm">
+              Captain: {players.find(p => p.id === team.captain_id)?.name ?? '\u2014'}
             </span>
-            <span className="ml-auto text-green-400 text-sm">₹{team.budget_remaining} left</span>
+            <span className="ml-auto text-gold/70 text-sm font-mono">{'\u20B9'}{team.budget_remaining}</span>
           </div>
         ))}
       </div>
 
       {/* Create team form */}
       {teams.length < 5 && (
-        <div className="bg-gray-900 rounded-lg p-4 space-y-3">
-          <h2 className="font-semibold text-sm text-gray-400 uppercase tracking-wide">New Team</h2>
+        <div className="bg-navy-light border border-navy-mid/50 rounded-lg p-5 space-y-4">
+          <h2 className="font-bold text-xs text-gold/50 uppercase tracking-[0.2em]">New Team</h2>
           <input
             placeholder="Team name"
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2"
+            className="w-full bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
           />
           <div className="flex gap-2">
             {COLORS.map(c => (
               <button
                 key={c}
                 onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full border-2 ${color === c ? 'border-white' : 'border-transparent'}`}
+                className={`w-8 h-8 rounded-full border-2 transition ${color === c ? 'border-gold scale-110' : 'border-transparent hover:border-cream/30'}`}
                 style={{ backgroundColor: c }}
               />
             ))}
@@ -75,29 +75,29 @@ export default function TeamSetupPanel({
           <select
             value={captainId}
             onChange={e => setCaptainId(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2"
+            className="w-full bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
           >
-            <option value="">Select captain…</option>
+            <option value="">Select captain&hellip;</option>
             {availableCaptains.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
           <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-400">Starting purse ₹</label>
+            <label className="text-xs text-cream/40 uppercase tracking-wider">Starting purse {'\u20B9'}</label>
             <input
               type="number"
               value={budget}
               onChange={e => setBudget(parseInt(e.target.value))}
               step={100}
-              className="w-24 bg-gray-800 border border-gray-700 text-white rounded px-3 py-2"
+              className="w-24 bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
             />
           </div>
           <button
             onClick={createTeam}
             disabled={creating || !name || !captainId}
-            className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white px-4 py-2 rounded font-medium"
+            className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
           >
-            {creating ? 'Creating…' : 'Create Team'}
+            {creating ? 'Creating\u2026' : 'Create Team'}
           </button>
         </div>
       )}

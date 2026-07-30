@@ -1,19 +1,19 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 
-const inter = Inter({ subsets: ['latin'] })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Football League 2026',
-  description: 'IPL-style football league manager',
+  title: 'Barely Premier League',
+  description: 'Where ambition exceeds ability — Est. 2026',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} bg-gray-950 text-white min-h-screen`}>
+    <html lang="en">
+      <body className={`${spaceGrotesk.className} bg-navy text-cream min-h-screen`}>
         <Nav />
         {children}
       </body>

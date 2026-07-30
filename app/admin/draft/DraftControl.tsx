@@ -44,62 +44,62 @@ export default function DraftControl({
   return (
     <div className="space-y-8">
       {/* Captain account creation */}
-      <div className="bg-gray-900 rounded-lg p-4 space-y-3">
-        <h2 className="font-semibold text-gray-400 text-sm uppercase">Create Captain Login</h2>
+      <div className="bg-navy-light border border-navy-mid/50 rounded-lg p-5 space-y-4">
+        <h2 className="font-bold text-xs text-gold/50 uppercase tracking-[0.2em]">Create Captain Login</h2>
         <select
           value={selectedTeam}
           onChange={e => setSelectedTeam(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2"
+          className="w-full bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
         >
-          <option value="">Select team…</option>
+          <option value="">Select team&hellip;</option>
           {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
         <input
           placeholder="Captain email"
           value={captainEmail}
           onChange={e => setCaptainEmail(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2"
+          className="w-full bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
         />
         <input
           type="password"
           placeholder="Password"
           value={captainPass}
           onChange={e => setCaptainPass(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2"
+          className="w-full bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
         />
         <button
           onClick={createCaptain}
           disabled={loading || !captainEmail || !captainPass || !selectedTeam}
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded"
+          className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
         >
           Create Account
         </button>
-        {msg && <p className="text-sm text-green-400">{msg}</p>}
+        {msg && <p className="text-sm text-gold/70">{msg}</p>}
       </div>
 
       {/* Draft start/pause/resume */}
-      <div className="bg-gray-900 rounded-lg p-4 space-y-3">
-        <h2 className="font-semibold text-gray-400 text-sm uppercase">Draft Session</h2>
-        <p className="text-sm">
-          Status: <span className="text-green-400 font-mono">{session?.status ?? 'not started'}</span>
-          {session && ` | Pick ${session.current_pick_index + 1} of ${session.snake_order.length}`}
+      <div className="bg-navy-light border border-navy-mid/50 rounded-lg p-5 space-y-4">
+        <h2 className="font-bold text-xs text-gold/50 uppercase tracking-[0.2em]">Draft Session</h2>
+        <p className="text-sm text-cream/60">
+          Status: <span className="text-gold font-mono font-bold">{session?.status ?? 'not started'}</span>
+          {session && ` \u2022 Pick ${session.current_pick_index + 1} of ${session.snake_order.length}`}
         </p>
         {!session || session.status === 'setup' ? (
           <>
             <div className="flex items-center gap-3">
-              <label className="text-sm text-gray-400">Starting purse ₹</label>
+              <label className="text-xs text-cream/40 uppercase tracking-wider">Starting purse {'\u20B9'}</label>
               <input
                 type="number"
                 value={budget}
                 onChange={e => setBudget(parseInt(e.target.value))}
                 step={100}
-                className="w-24 bg-gray-800 border border-gray-700 rounded px-3 py-2"
+                className="w-24 bg-navy border border-navy-mid text-cream rounded px-3 py-2.5 focus:ring-1 focus:ring-gold/50 focus:border-gold/50 transition"
               />
             </div>
             <button
               onClick={() => draftAction('start')}
               disabled={loading || teams.length < 2}
-              className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white px-4 py-2 rounded"
+              className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
             >
               Start Draft
             </button>
@@ -108,7 +108,7 @@ export default function DraftControl({
           <button
             onClick={() => draftAction('pause')}
             disabled={loading}
-            className="bg-yellow-600 hover:bg-yellow-500 disabled:opacity-50 text-white px-4 py-2 rounded"
+            className="bg-navy border-2 border-gold/50 hover:border-gold disabled:opacity-50 text-gold font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
           >
             Pause Draft
           </button>
@@ -116,12 +116,12 @@ export default function DraftControl({
           <button
             onClick={() => draftAction('resume')}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white px-4 py-2 rounded"
+            className="bg-gold hover:bg-gold-light disabled:opacity-50 text-navy font-bold px-5 py-2.5 rounded-lg transition uppercase tracking-wider text-sm"
           >
             Resume Draft
           </button>
         ) : (
-          <p className="text-green-400">Draft complete!</p>
+          <p className="text-gold font-semibold">Draft complete!</p>
         )}
       </div>
     </div>

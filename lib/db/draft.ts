@@ -1,5 +1,6 @@
 // lib/db/draft.ts
 import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { DraftSession } from '@/types'
 
 export async function getDraftSession(): Promise<DraftSession | null> {
@@ -13,31 +14,38 @@ export async function getDraftSession(): Promise<DraftSession | null> {
   return data
 }
 
-export async function upsertDraftSession(data: Partial<DraftSession>): Promise<DraftSession> {
-  const supabase = await createServerClient()
-  const existing = await getDraftSession()
+export async function upsertDraftSession(updates: Partial<DraftSession>): Promise<DraftSession> {
+  const supabase = createAdminClient()
+  const { data: existing } = await supabase
+    .from('draft_session')
+    .select('*')
+    .single()
+
   if (existing) {
     const { data: updated, error } = await supabase
       .from('draft_session')
-      .update(data)
+      .update(updates)
       .eq('id', existing.id)
       .select()
       .single()
     if (error) throw error
-    return updated
+    return updated as DraftSession
   }
   const { data: created, error } = await supabase
     .from('draft_session')
-    .insert(data)
+    .insert(updates)
     .select()
     .single()
   if (error) throw error
-  return created
+  return created as DraftSession
 }
 
 export async function advancePick(): Promise<void> {
-  const supabase = await createServerClient()
-  const session = await getDraftSession()
+  const supabase = createAdminClient()
+  const { data: session } = await supabase
+    .from('draft_session')
+    .select('*')
+    .single()
   if (!session) throw new Error('No draft session')
   const { error } = await supabase
     .from('draft_session')

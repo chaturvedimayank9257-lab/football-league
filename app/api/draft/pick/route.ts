@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { getDraftSession, advancePick } from '@/lib/db/draft'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getDraftSession, advancePick, upsertDraftSession } from '@/lib/db/draft'
 import { draftPlayer } from '@/lib/db/players'
 import { deductBudget, getTeams } from '@/lib/db/teams'
 
@@ -25,20 +26,22 @@ export async function POST(request: NextRequest) {
   }
 
   const { playerId } = await request.json()
+  if (!playerId) return NextResponse.json({ error: 'Player ID required' }, { status: 400 })
 
-  // Get player base price
   const teams = await getTeams()
   const team = teams.find(t => t.id === activeTeamId)
   if (!team) return NextResponse.json({ error: 'Team not found' }, { status: 400 })
 
-  // Fetch player to get base_price
-  const { data: player, error: playerErr } = await (await createServerClient())
+  // Fetch player using admin client
+  const admin = createAdminClient()
+  const { data: playerRow, error: playerErr } = await admin
     .from('players')
     .select('base_price, team_id')
     .eq('id', playerId)
     .single()
 
-  if (playerErr || !player) return NextResponse.json({ error: 'Player not found' }, { status: 400 })
+  if (playerErr || !playerRow) return NextResponse.json({ error: 'Player not found' }, { status: 400 })
+  const player = playerRow as unknown as { base_price: number; team_id: string | null }
   if (player.team_id) return NextResponse.json({ error: 'Already drafted' }, { status: 400 })
   if (team.budget_remaining < player.base_price) {
     return NextResponse.json({ error: 'Insufficient budget' }, { status: 400 })
@@ -50,7 +53,6 @@ export async function POST(request: NextRequest) {
   // Advance to next pick (or complete if last pick)
   const nextIndex = session.current_pick_index + 1
   if (nextIndex >= session.snake_order.length) {
-    const { upsertDraftSession } = await import('@/lib/db/draft')
     await upsertDraftSession({ status: 'completed', current_pick_index: nextIndex })
   } else {
     await advancePick()

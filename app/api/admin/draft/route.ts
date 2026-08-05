@@ -10,6 +10,14 @@ export async function POST(request: NextRequest) {
 
   if (action === 'start') {
     const [teams, players] = await Promise.all([getTeams(), getConfirmedPlayers()])
+
+    if (teams.length < 2) {
+      return NextResponse.json({ error: 'Need at least 2 teams to start draft' }, { status: 400 })
+    }
+    if (players.length === 0) {
+      return NextResponse.json({ error: 'No confirmed players available' }, { status: 400 })
+    }
+
     const teamIds = teams.map(t => t.id)
     const snakeOrder = generateSnakeOrder(teamIds, players.length)
     const session = await upsertDraftSession({

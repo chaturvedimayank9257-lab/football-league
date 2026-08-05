@@ -1,5 +1,6 @@
 // lib/db/players.ts
 import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Player } from '@/types'
 
 export async function getPlayers(): Promise<Player[]> {
@@ -36,7 +37,7 @@ export async function getAvailablePlayers(): Promise<Player[]> {
 }
 
 export async function createPlayer(name: string, basePrice: number): Promise<Player> {
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('players')
     .insert({ name, base_price: basePrice, status: 'confirmed' })
@@ -47,19 +48,19 @@ export async function createPlayer(name: string, basePrice: number): Promise<Pla
 }
 
 export async function deletePlayer(id: string): Promise<void> {
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
   const { error } = await supabase.from('players').delete().eq('id', id)
   if (error) throw error
 }
 
 export async function updatePlayer(id: string, data: Partial<Player>): Promise<void> {
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
   const { error } = await supabase.from('players').update(data).eq('id', id)
   if (error) throw error
 }
 
 export async function draftPlayer(playerId: string, teamId: string, soldPrice: number): Promise<void> {
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
   const { error } = await supabase
     .from('players')
     .update({ team_id: teamId, sold_price: soldPrice })

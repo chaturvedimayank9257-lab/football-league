@@ -30,29 +30,17 @@ export async function updateTeam(id: string, data: Partial<Team>): Promise<void>
   if (error) throw error
 }
 
-// Atomic budget deduction — uses raw SQL to prevent race conditions
 export async function deductBudget(teamId: string, amount: number): Promise<void> {
   const supabase = createAdminClient()
-  const { data, error } = await supabase.rpc('deduct_budget', {
-    p_team_id: teamId,
-    p_amount: amount,
-  })
-  // Fallback if RPC doesn't exist yet: read-then-write
-  if (error?.code === '42883') {
-    // Function not found — use non-atomic fallback
-    const { data: team, error: fetchError } = await supabase
-      .from('teams')
-      .select('budget_remaining')
-      .eq('id', teamId)
-      .single()
-    if (fetchError) throw fetchError
-    if (team.budget_remaining < amount) throw new Error('Insufficient budget')
-    const { error: updateError } = await supabase
-      .from('teams')
-      .update({ budget_remaining: team.budget_remaining - amount })
-      .eq('id', teamId)
-    if (updateError) throw updateError
-    return
-  }
-  if (error) throw error
+  const { data: team, error: fetchError } = await supabase
+    .from('teams')
+    .select('budget_remaining')
+    .eq('id', teamId)
+    .single()
+  if (fetchError) throw fetchError
+  const { error: updateError } = await supabase
+    .from('teams')
+    .update({ budget_remaining: team.budget_remaining - amount })
+    .eq('id', teamId)
+  if (updateError) throw updateError
 }

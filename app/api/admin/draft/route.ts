@@ -72,12 +72,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Player already assigned' }, { status: 400 })
     }
     await draftPlayer(playerId, teamId, soldPrice)
-    await deductBudget(teamId, soldPrice)
+    // Deduct budget and advance session — always clear current_player_id even on error
     const session = await getDraftSession()
     await upsertDraftSession({
       current_player_id: null,
       current_pick_index: (session?.current_pick_index ?? 0) + 1,
     })
+    await deductBudget(teamId, soldPrice)
     return NextResponse.json({ ok: true })
   }
 

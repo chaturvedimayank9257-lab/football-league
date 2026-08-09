@@ -40,16 +40,3 @@ export async function upsertDraftSession(updates: Partial<DraftSession>): Promis
   return created as DraftSession
 }
 
-export async function advancePick(): Promise<void> {
-  const supabase = createAdminClient()
-  const { data: session } = await supabase
-    .from('draft_session')
-    .select('*')
-    .single()
-  if (!session) throw new Error('No draft session')
-  const { error } = await supabase
-    .from('draft_session')
-    .update({ current_pick_index: session.current_pick_index + 1 })
-    .eq('id', session.id)
-  if (error) throw error
-}

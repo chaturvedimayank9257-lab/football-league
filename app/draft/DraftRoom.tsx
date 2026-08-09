@@ -5,21 +5,19 @@ import type { DraftSession, Player, Team } from '@/types'
 
 export default function DraftRoom({
   initialSession,
-  initialPlayers,
+  initialRecentlySold,
   initialTeams,
-  myTeamId,
-  isAdmin,
+  initialCurrentPlayer,
 }: {
   initialSession: DraftSession | null
-  initialPlayers: Player[]
+  initialRecentlySold: Player[]
   initialTeams: Team[]
-  myTeamId: string | null
-  isAdmin: boolean
+  initialCurrentPlayer: Player | null
 }) {
   const [session, setSession] = useState(initialSession)
-  const [players, setPlayers] = useState(initialPlayers)
+  const [soldPlayers, setSoldPlayers] = useState<Player[]>(initialRecentlySold)
   const [teams, setTeams] = useState(initialTeams)
-  const [picking, setPicking] = useState<string | null>(null)
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(initialCurrentPlayer)
 
   const supabase = createBrowserClient()
 
@@ -29,9 +27,14 @@ export default function DraftRoom({
       .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_session' }, payload => {
         setSession(payload.new as DraftSession)
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'players' }, payload => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'players' }, async payload => {
         const updated = payload.new as Player
-        setPlayers(prev => prev.filter(p => p.id !== updated.id))
+        if (updated.team_id) {
+          // Player was sold — prepend to feed
+          setSoldPlayers(prev => [updated, ...prev].slice(0, 10))
+          // Clear current player if it was this one
+          setCurrentPlayer(prev => (prev?.id === updated.id ? null : prev))
+        }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'teams' }, payload => {
         const updated = payload.new as Team
@@ -40,103 +43,90 @@ export default function DraftRoom({
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  // supabase is a stable singleton — no need in deps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function pickPlayer(playerId: string) {
-    setPicking(playerId)
-    const res = await fetch('/api/draft/pick', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId }),
-    })
-    if (!res.ok) {
-      const { error } = await res.json()
-      alert(error)
+  // When session changes, fetch the current player if needed
+  useEffect(() => {
+    if (!session?.current_player_id) {
+      setCurrentPlayer(null)
+      return
     }
-    setPicking(null)
-  }
-
-  if (!session) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <p className="text-cream/30 text-lg">Draft has not started yet. Check back soon!</p>
-      </div>
-    )
-  }
-
-  const activeTeamId = session.status === 'active'
-    ? session.snake_order[session.current_pick_index]
-    : null
-  const activeTeam = teams.find(t => t.id === activeTeamId)
-  const isMyTurn = myTeamId === activeTeamId || isAdmin
+    // Fetch from public read
+    supabase
+      .from('players')
+      .select('*')
+      .eq('id', session.current_player_id)
+      .single()
+      .then(({ data }) => {
+        if (data) setCurrentPlayer(data as Player)
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.current_player_id])
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gold">Live Draft</h1>
-          {session.status === 'active' && activeTeam && (
-            <p className="text-cream/50 mt-1">
-              Pick {session.current_pick_index + 1}/{session.snake_order.length} &mdash;
-              <span className="font-bold ml-1" style={{ color: activeTeam.color }}>
-                {activeTeam.name}&apos;s turn
-              </span>
-            </p>
-          )}
-          {session.status === 'paused' && (
-            <p className="text-gold/70 mt-1">Draft is paused</p>
-          )}
-          {session.status === 'completed' && (
-            <p className="text-gold mt-1">Draft complete!</p>
-          )}
-        </div>
-
-        {/* Team budgets */}
-        <div className="flex gap-5">
-          {teams.map(t => {
-            const isActive = t.id === activeTeamId
-            return (
-              <div key={t.id} className={`text-center ${isActive ? 'scale-110' : 'opacity-60'} transition`}>
-                <div
-                  className={`w-4 h-4 rounded-full mx-auto mb-1 ring-2 ${isActive ? 'ring-gold' : 'ring-white/10'}`}
-                  style={{ backgroundColor: t.color }}
-                />
-                <div className="font-mono text-xs text-cream/60">{'\u20B9'}{t.budget_remaining}</div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="gold-divider mb-6" />
-
-      {/* Player pool */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {players.map(p => (
-          <button
-            key={p.id}
-            onClick={() => pickPlayer(p.id)}
-            disabled={!isMyTurn || session.status !== 'active' || picking === p.id}
-            className={`bg-navy-light border rounded-lg p-4 text-left transition ${
-              isMyTurn && session.status === 'active'
-                ? 'border-navy-mid hover:border-gold hover:shadow-[0_0_12px_rgba(212,175,55,0.15)] cursor-pointer'
-                : 'border-navy-mid/50 opacity-40 cursor-not-allowed'
-            }`}
-          >
-            <div className="font-semibold text-sm text-cream">{p.name}</div>
-            <div className="text-gold/50 text-xs mt-1 font-mono">{'\u20B9'}{p.base_price}</div>
-            {picking === p.id && (
-              <div className="text-gold text-xs mt-1 font-semibold">Picking&hellip;</div>
-            )}
-          </button>
-        ))}
-        {players.length === 0 && session.status !== 'completed' && (
-          <p className="col-span-full text-cream/30 text-center py-12">All players drafted!</p>
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      {/* Current auction */}
+      <div className="bg-navy-light border border-navy-mid/50 rounded-2xl p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
+        {!session || session.status === 'setup' ? (
+          <p className="text-cream/30 text-lg">Auction has not started yet.</p>
+        ) : session.status === 'completed' ? (
+          <p className="text-gold text-2xl font-bold">Auction Complete!</p>
+        ) : currentPlayer ? (
+          <>
+            <span className="inline-block bg-gold/20 text-gold text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-5 animate-pulse">
+              Live Auction
+            </span>
+            <h1 className="text-4xl font-bold text-cream mb-3">{currentPlayer.name}</h1>
+            <p className="text-cream/40 text-lg">Base price: <span className="font-mono text-gold">&#8377;{currentPlayer.base_price}</span></p>
+          </>
+        ) : (
+          <p className="text-cream/30 text-lg">
+            {session.status === 'paused' ? 'Auction paused…' : 'Waiting for next player…'}
+          </p>
         )}
       </div>
+
+      {/* Team budgets */}
+      {teams.length > 0 && (
+        <div>
+          <h2 className="font-bold text-xs text-gold/50 uppercase tracking-[0.2em] mb-3">Team Purses</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {teams.map(t => (
+              <div key={t.id} className="bg-navy-light border border-navy-mid/50 rounded-lg px-4 py-3 flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                <div className="min-w-0">
+                  <div className="text-xs text-cream/50 truncate">{t.name}</div>
+                  <div className="font-mono font-bold text-gold text-lg">&#8377;{t.budget_remaining}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recently sold */}
+      {soldPlayers.length > 0 && (
+        <div>
+          <h2 className="font-bold text-xs text-gold/50 uppercase tracking-[0.2em] mb-3">Recently Sold</h2>
+          <div className="space-y-2">
+            {soldPlayers.map(p => {
+              const team = teams.find(t => t.id === p.team_id)
+              return (
+                <div key={p.id} className="bg-navy-light border border-navy-mid/30 rounded-lg px-4 py-2.5 flex items-center justify-between">
+                  <span className="text-cream font-medium">{p.name}</span>
+                  <span className="text-sm text-cream/40">
+                    {team && (
+                      <span className="mr-2" style={{ color: team.color }}>{team.name}</span>
+                    )}
+                    <span className="font-mono text-gold/70">&#8377;{p.sold_price}</span>
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

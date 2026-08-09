@@ -27,8 +27,9 @@ export interface Team {
 export interface DraftSession {
   id: string
   status: DraftSessionStatus
-  snake_order: string[]   // ordered array of team_ids
-  current_pick_index: number
+  snake_order: string[]
+  current_pick_index: number  // repurposed as "players sold" counter
+  current_player_id: string | null
   starting_budget: number
   created_at: string
 }
